@@ -49,3 +49,9 @@ variable "public_subnets" {
   type        = list(string)
   default     = []
 }
+
+variable "database_subnet_group_name" {
+  description = "Name of database subnet group"
+  type        = string
+  default     = "db-subnet-group-tf"
+}
