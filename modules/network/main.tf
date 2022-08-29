@@ -24,13 +24,12 @@ resource "aws_route" "igw_route" {
   gateway_id             = aws_internet_gateway.default.id
 }
 
-resource "aws_subnet" "database" {
+resource "aws_subnet" "db" {
   count = length(var.database_subnets) > 0 ? length(var.database_subnets) : 0
 
   vpc_id               = aws_vpc.default.id
   cidr_block           = var.database_subnets[count.index]
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
 
   tags = merge(
     {
@@ -49,7 +48,6 @@ resource "aws_subnet" "public" {
   vpc_id               = aws_vpc.default.id
   cidr_block           = var.public_subnets[count.index]
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
 
   tags = merge(
     {
