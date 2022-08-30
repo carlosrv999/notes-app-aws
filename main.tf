@@ -38,7 +38,7 @@ module "container" {
   container_image         = var.container_image
   subnets                 = module.vpc.public_subnets_ids
   task_execution_role_arn = module.iam.task_execution_role_arn
-  security_group_ids = [ aws_security_group.ecs.id ]
+  security_group_ids      = [aws_security_group.ecs.id]
 }
 
 resource "aws_security_group" "rds" {
