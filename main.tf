@@ -44,3 +44,9 @@ module "database" {
     aws_security_group.rds.id
   ]
 }
+
+resource "null_resource" "init_db" {
+  provisioner "local-exec" {
+    command = "./restore-db.sh ${var.db_password} ${module.database.endpoint}"
+  }
+}
