@@ -21,7 +21,8 @@ resource "aws_ecs_cluster_capacity_providers" "default" {
 }
 
 locals {
-  port = "8080"
+  port           = 8080
+  container_name = "notes-container"
 }
 
 resource "aws_ecs_task_definition" "default" {
@@ -50,7 +51,7 @@ resource "aws_ecs_task_definition" "default" {
           }
         }
         mountPoints = []
-        name        = "notes-container"
+        name        = local.container_name
         portMappings = [
           {
             containerPort = local.port
@@ -85,7 +86,7 @@ resource "aws_ecs_service" "default" {
   cluster                            = aws_ecs_cluster.default.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = 1
+  desired_count                      = var.replicas
   enable_ecs_managed_tags            = true
   enable_execute_command             = false
   health_check_grace_period_seconds  = 0
@@ -95,6 +96,12 @@ resource "aws_ecs_service" "default" {
   propagate_tags                     = "NONE"
   scheduling_strategy                = "REPLICA"
   task_definition                    = "${aws_ecs_task_definition.default.family}:${aws_ecs_task_definition.default.revision}"
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = local.container_name
+    container_port   = 8080
+  }
 
   deployment_circuit_breaker {
     enable   = false

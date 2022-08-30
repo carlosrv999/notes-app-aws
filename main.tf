@@ -49,6 +49,21 @@ module "container" {
   subnets                 = module.vpc.public_subnets_ids
   task_execution_role_arn = module.iam.task_execution_role_arn
   security_group_ids      = [aws_security_group.ecs.id]
+  target_group_arn        = module.loadbalancer.target_group_arn
+  replicas                = 5
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
+}
+
+module "loadbalancer" {
+  source = "./modules/loadbalancer"
+
+  security_groups_ids = [aws_security_group.alb.id]
+  subnet_ids          = module.vpc.public_subnets_ids[*]
+  vpc_id              = module.vpc.vpc_ip
 
   tags = {
     Terraform   = "true"
@@ -63,6 +78,16 @@ resource "aws_security_group" "rds" {
 
   tags = {
     Name = "rds-secgroup"
+  }
+}
+
+resource "aws_security_group" "alb" {
+  name        = "alb-secgroup"
+  description = "This is the security group for the ALB"
+  vpc_id      = module.vpc.vpc_ip
+
+  tags = {
+    Name = "alb-secgroup"
   }
 }
 
@@ -101,6 +126,24 @@ resource "aws_security_group_rule" "allow_tcp_anywhere" {
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.ecs.id
+}
+
+resource "aws_security_group_rule" "allow_alb_http_anywhere" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_security_group_rule" "alb_outgoing" {
+  type              = "egress"
+  protocol          = "all"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
 }
 
 resource "aws_security_group_rule" "container_outgoing" {

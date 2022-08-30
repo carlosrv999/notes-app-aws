@@ -28,3 +28,12 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "target_group_arn" {
+  type = string
+}
+
+variable "replicas" {
+  type = number
+}
+
