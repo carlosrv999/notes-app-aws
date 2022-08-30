@@ -13,3 +13,34 @@ module "vpc" {
   }
 
 }
+
+resource "aws_security_group" "rds" {
+  name        = "rds-secgroup"
+  description = "This is the security group for the RDS cluster"
+  vpc_id      = module.vpc.vpc_ip
+
+  tags = {
+    Name = "rds-secgroup"
+  }
+}
+
+resource "aws_security_group_rule" "rds-secgroup-allow-from-home" {
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["38.25.18.114/32"]
+  security_group_id = aws_security_group.rds.id
+}
+
+module "database" {
+  source = "./modules/database"
+
+  db_subnet_group_name = module.vpc.aws_db_subnet_group
+  db_password          = var.db_password
+  db_instance_name     = "postgres-1"
+
+  security_group_ids = [
+    aws_security_group.rds.id
+  ]
+}

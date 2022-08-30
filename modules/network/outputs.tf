@@ -13,3 +13,7 @@ output "public_subnets_ids" {
 output "db_subnets_ids" {
   value = aws_subnet.db[*].id
 }
+
+output "aws_db_subnet_group" {
+  value = try(aws_db_subnet_group.database[0].name, "")
+}
