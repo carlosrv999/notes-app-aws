@@ -45,9 +45,10 @@ resource "aws_subnet" "db" {
 resource "aws_subnet" "public" {
   count = length(var.public_subnets) > 0 ? length(var.public_subnets) : 0
 
-  vpc_id            = aws_vpc.default.id
-  cidr_block        = var.public_subnets[count.index]
-  availability_zone = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  vpc_id                  = aws_vpc.default.id
+  cidr_block              = var.public_subnets[count.index]
+  availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  map_public_ip_on_launch = true
 
   tags = merge(
     {

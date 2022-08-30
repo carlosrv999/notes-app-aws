@@ -20,6 +20,10 @@ resource "aws_ecs_cluster_capacity_providers" "default" {
   cluster_name = aws_ecs_cluster.default.name
 }
 
+locals {
+  port = "8080"
+}
+
 resource "aws_ecs_task_definition" "default" {
   container_definitions = jsonencode(
     [
@@ -49,8 +53,8 @@ resource "aws_ecs_task_definition" "default" {
         name        = "notes-container"
         portMappings = [
           {
-            containerPort = 8080
-            hostPort      = 8080
+            containerPort = local.port
+            hostPort      = local.port
             protocol      = "tcp"
           },
         ]
@@ -85,7 +89,6 @@ resource "aws_ecs_service" "default" {
   enable_ecs_managed_tags            = true
   enable_execute_command             = false
   health_check_grace_period_seconds  = 0
-  iam_role                           = "aws-service-role"
   launch_type                        = "FARGATE"
   name                               = "notes-web-app"
   platform_version                   = "LATEST"

@@ -103,6 +103,15 @@ resource "aws_security_group_rule" "allow_tcp_anywhere" {
   security_group_id = aws_security_group.ecs.id
 }
 
+resource "aws_security_group_rule" "container_outgoing" {
+  type              = "egress"
+  protocol          = "all"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.ecs.id
+}
+
 resource "null_resource" "init_db" {
   provisioner "local-exec" {
     command = "./restore-db.sh ${var.db_password} ${module.database.endpoint}"
