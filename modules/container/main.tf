@@ -14,7 +14,7 @@ resource "aws_ecs_task_definition" "example" {
           },
         ]
         essential = true
-        image     = "452034299452.dkr.ecr.us-east-2.amazonaws.com/notes-web:latest"
+        image     = var.container_image
         logConfiguration = {
           logDriver = "awslogs"
           options = {
@@ -37,7 +37,7 @@ resource "aws_ecs_task_definition" "example" {
     ]
   )
   cpu                = "256"
-  execution_role_arn = "arn:aws:iam::452034299452:role/ecsTaskExecutionRole"
+  execution_role_arn = var.task_execution_role_arn
   family             = "notes-webapp"
   memory             = "512"
   network_mode       = "awsvpc"
@@ -77,14 +77,8 @@ resource "aws_ecs_service" "imported" {
 
   network_configuration {
     assign_public_ip = true
-    security_groups = [
-      "sg-0a81d411897ee7782",
-    ]
-    subnets = [
-      "subnet-017ed5b235eb0482b",
-      "subnet-06af9245410d7f89e",
-      "subnet-082c1332b2d592322",
-    ]
+    security_groups  = var.security_group_ids[*]
+    subnets          = var.subnets[*]
   }
 
   timeouts {}
