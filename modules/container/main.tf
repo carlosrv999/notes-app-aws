@@ -1,4 +1,26 @@
-resource "aws_ecs_task_definition" "example" {
+resource "aws_ecs_cluster" "default" {
+  name = "ecs-notesapp"
+
+  setting {
+    name  = "containerInsights"
+    value = "disabled"
+  }
+
+  tags = merge(
+    { "Name" = "notes-app" },
+    var.tags,
+  )
+}
+
+resource "aws_ecs_cluster_capacity_providers" "default" {
+  capacity_providers = [
+    "FARGATE",
+    "FARGATE_SPOT",
+  ]
+  cluster_name = aws_ecs_cluster.default.name
+}
+
+resource "aws_ecs_task_definition" "default" {
   container_definitions = jsonencode(
     [
       {
@@ -48,10 +70,15 @@ resource "aws_ecs_task_definition" "example" {
   runtime_platform {
     operating_system_family = "LINUX"
   }
+
+  tags = merge(
+    { "Name" = "notes-app" },
+    var.tags,
+  )
 }
 
-resource "aws_ecs_service" "imported" {
-  cluster                            = "arn:aws:ecs:us-east-2:452034299452:cluster/notesapp"
+resource "aws_ecs_service" "default" {
+  cluster                            = aws_ecs_cluster.default.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = 1
@@ -64,7 +91,7 @@ resource "aws_ecs_service" "imported" {
   platform_version                   = "LATEST"
   propagate_tags                     = "NONE"
   scheduling_strategy                = "REPLICA"
-  task_definition                    = "notes-webapp:2"
+  task_definition                    = "${aws_ecs_task_definition.default.family}:${aws_ecs_task_definition.default.revision}"
 
   deployment_circuit_breaker {
     enable   = false
@@ -81,5 +108,8 @@ resource "aws_ecs_service" "imported" {
     subnets          = var.subnets[*]
   }
 
-  timeouts {}
+  tags = merge(
+    { "Name" = "notes-app" },
+    var.tags,
+  )
 }

@@ -24,10 +24,20 @@ module "database" {
   security_group_ids = [
     aws_security_group.rds.id
   ]
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
 
 module "iam" {
   source = "./modules/iam"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
 
 module "container" {
@@ -39,6 +49,11 @@ module "container" {
   subnets                 = module.vpc.public_subnets_ids
   task_execution_role_arn = module.iam.task_execution_role_arn
   security_group_ids      = [aws_security_group.ecs.id]
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
 
 resource "aws_security_group" "rds" {

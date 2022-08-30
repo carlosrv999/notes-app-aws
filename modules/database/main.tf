@@ -16,4 +16,9 @@ resource "aws_db_instance" "default" {
   username               = "postgres"
   password               = var.db_password
   vpc_security_group_ids = var.security_group_ids[*]
+
+  tags = merge(
+    { "Name" = "notes-app" },
+    var.tags,
+  )
 }

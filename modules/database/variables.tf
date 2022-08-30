@@ -27,3 +27,9 @@ variable "db_password" {
   type      = string
   sensitive = true
 }
+
+variable "tags" {
+  description = "A map of tags to add to all resources"
+  type        = map(string)
+  default     = {}
+}

@@ -21,4 +21,9 @@ resource "aws_iam_role" "default" {
   max_session_duration = 3600
   name                 = "ecsTaskExecutionRole"
   path                 = "/"
+
+  tags = merge(
+    { "Name" = "notes-app" },
+    var.tags,
+  )
 }
