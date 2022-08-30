@@ -5,7 +5,7 @@ resource "aws_lb" "default" {
   security_groups    = var.security_groups_ids[*]
   subnets            = var.subnet_ids[*]
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   tags = merge(
     { "Name" = "notes-app" },

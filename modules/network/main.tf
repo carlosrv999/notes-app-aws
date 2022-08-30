@@ -75,3 +75,87 @@ resource "aws_db_subnet_group" "database" {
     var.tags,
   )
 }
+
+resource "aws_security_group" "rds" {
+  name        = "rds-secgroup"
+  description = "This is the security group for the RDS cluster"
+  vpc_id      = aws_vpc.default.id
+
+  tags = {
+    Name = "rds-secgroup"
+  }
+}
+
+resource "aws_security_group" "alb" {
+  name        = "alb-secgroup"
+  description = "This is the security group for the ALB"
+  vpc_id      = aws_vpc.default.id
+
+  tags = {
+    Name = "alb-secgroup"
+  }
+}
+
+resource "aws_security_group" "ecs" {
+  name        = "ecs-task-notes-web-secgroup"
+  description = "This is the security group for the Notes webapp ECS service"
+  vpc_id      = aws_vpc.default.id
+
+  tags = {
+    Name = "ecs-task-notes-web-secgroup"
+  }
+}
+
+resource "aws_security_group_rule" "allow_home" {
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["38.25.18.114/32"]
+  security_group_id = aws_security_group.rds.id
+}
+
+resource "aws_security_group_rule" "allow_ecs_to_rds" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ecs.id
+  security_group_id        = aws_security_group.rds.id
+}
+
+resource "aws_security_group_rule" "allow_tcp_anywhere" {
+  type              = "ingress"
+  from_port         = 8080
+  to_port           = 8080
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.ecs.id
+}
+
+resource "aws_security_group_rule" "allow_alb_http_anywhere" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_security_group_rule" "alb_outgoing" {
+  type              = "egress"
+  protocol          = "all"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_security_group_rule" "container_outgoing" {
+  type              = "egress"
+  protocol          = "all"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.ecs.id
+}
